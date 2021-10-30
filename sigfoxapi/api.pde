@@ -8,13 +8,19 @@ class Sigfox {
     this.password = passd;
   }
 
-  ArrayList<JSONObject> device_messages(String device, int limit) {
+  JSONArray device_messages(String device, Integer ... p) {
     /*
      *
      */
 
-    ArrayList<JSONObject> retList = new ArrayList<JSONObject>();
-    String url = this.api_url + "devices/" + device + "/messages?limit=" + Integer.toString(limit);
+    Integer limit = p.length > 0 ? p[0] : 0;
+    Integer offset = p.length > 1 ? p[1] : 0;
+
+    if (limit > 100) limit=100;  // no paging in case of limit
+    
+    String url = this.api_url + "devices/" + device + "/messages?limit=" + Integer.toString(limit)+"&offset="+Integer.toString(offset);
+
+    println(url);
 
     GetRequest get = new GetRequest(url);
     get.addUser(Secure.user, Secure.password); 
@@ -22,27 +28,37 @@ class Sigfox {
     JSONObject response = parseJSONObject(get.getContent());
     JSONArray ret = response.getJSONArray("data");
 
-    ArrayList<JSONObject> result = new ArrayList<JSONObject>();
-    result = extractData(ret);
-    retList.addAll(result);
-
-    return retList;
+    return ret;
   }
 
 
-  ArrayList<JSONObject> device_messages(String device, ArrayList<JSONObject> out ) {  
+  JSONArray device_messages(String device, String ... s) {
     /*
-     *  get all the messages pages
+     *
      */
-    String url = this.api_url + "devices/" + device + "/messages";
 
+    String b = s.length > 0 ? s[0] : "";
+    String si = s.length > 1 ? s[1] : "";
+
+    long before, since;
+    if (b!="")  before = convert2Epoch(b);
+    else before=0;
+    if (si!="") since  = convert2Epoch(si);
+    else since=0;
+
+
+    String url = this.api_url + "devices/" + device + "/messages?"+"before="+before+"&since="+since;
+
+    println(url);
+
+    JSONArray out = new JSONArray();
     device_messages_page(url, out);
-
     return out;
   }
 
 
-  ArrayList<JSONObject>  device_messages_page(String url, ArrayList<JSONObject> out ) {
+
+  JSONArray  device_messages_page(String url, JSONArray out ) {
     // Return array of message from paging URL.
 
     GetRequest get = new GetRequest(url);
@@ -55,9 +71,12 @@ class Sigfox {
       String new_page = response.getJSONObject("paging").getString("next");  // ok
       println(new_page);
 
-      ArrayList<JSONObject> result = new ArrayList<JSONObject>();
-      result = extractData(ret);
-      out.addAll(result);
+      // concatenate arrayjson
+      for (int i = 0; i < ret.size(); i++) {
+        JSONObject r = new JSONObject();
+        r = ret.getJSONObject(i);
+        out.append(r);
+      }
 
       //between two calls, it seems we should wait a bit
       delay(6000);
@@ -71,29 +90,39 @@ class Sigfox {
     return out;
   }
 
-  ArrayList<JSONObject> extractData(JSONArray in) {
-    ArrayList<JSONObject> out = new ArrayList<JSONObject>();
-    for (int i = 0; i < in.size(); i++) {  // and not length() !
-      JSONObject obj = in.getJSONObject(i);
+  // all messages
+  JSONArray device_messages(String device) {
+    // Return array of message from paging URL.
+    return device_messages(device, 0);
+  }
+
+  void pprint(JSONArray jsonarray) {
+    for (int i = 0; i < jsonarray.size(); i++) {  // and not length() !
+      JSONObject obj = jsonarray.getJSONObject(i);
       int sq = obj.getInt("seqNumber");
       String ii = obj.getString("data");
       long tt = obj.getLong("time");
-      Date t = new Date(tt);
+      Date da = new Date(tt);
 
-      SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy ~HH:mm:ss");
-      String mydate = sdf.format(t);
+      SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy ~ HH:mm:ss");
+      String mydate = sdf.format(da);
 
       JSONObject dd = obj.getJSONObject("device");
       String id = dd.getString("id");
-
-
-      JSONObject retJson = new JSONObject();
-      retJson.put("seq_n", sq);  // int
-      retJson.put("data", ii);
-      retJson.put("date", mydate);
-      retJson.put("device", id);
-      out.add(retJson);
+      println(sq+" "+ii+" "+mydate+" "+id);
     }
-    return out;
   }
-}
+
+
+  long convert2Epoch(String strDate) {
+    long millis=millis();
+    try {
+      millis = new SimpleDateFormat("dd-MM-yyyy").parse(strDate).getTime();
+    } 
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return millis;
+  }
+} // Sigfox

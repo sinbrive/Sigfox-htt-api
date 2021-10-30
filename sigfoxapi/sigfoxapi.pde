@@ -1,24 +1,23 @@
 import http.requests.*;
-// https://github.com/runemadsen/HTTP-Requests-for-Processing
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
 public void setup() {
   size(100, 100);
-  
+
   Sigfox t = new Sigfox(Secure.user, Secure.password);
 
-  ArrayList<JSONObject> list = new ArrayList<JSONObject>();
- 
-  list = t.device_messages("3068E",5);
-  for (int i=0; i<list.size(); i++) {
-    println(list.get(i).getInt("seq_n")+" "+list.get(i).getString("data")+" "+list.get(i).getString("date")+" "+list.get(i).getString("device"));
-  }
+  JSONArray jsonarray = new JSONArray();
+
+  //jsonarray = t.device_messages("C3068E", 6); // limit<=100 
+  //jsonarray = t.device_messages("C3068E", 20, 3); // limit and  offset  
   
-  delay(5000);  // must have between two calls
-  ArrayList<JSONObject> list2 = new ArrayList<JSONObject>();
-  //String url="https://api.sigfox.com/v2/devices/3068E/messages"; // only for test of pages
-  //t.device_messages_page(url, list2);  // only for test of pages
-  t.device_messages("3068E", list2);  // overloading
-  print(list2, list2.size() );
+  //jsonarray = t.device_messages("C3068E",  "19-10-2021", "15-10-2021");  // before & since
+
+  //jsonarray = t.device_messages("C3068E", "15-10-2021");  // before
+
+  //jsonarray = t.device_messages("C3068E");  // all messages
+
+  t.pprint(jsonarray);
+
 }
