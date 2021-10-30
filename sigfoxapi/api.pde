@@ -7,6 +7,41 @@ class Sigfox {
     this.login    = login;
     this.password = passd;
   }
+  
+    JSONObject device_info(String device_id) {
+    /*
+     *
+     */
+    
+    String url = this.api_url + "devices/" + device_id;
+
+    println(url);
+
+    GetRequest get = new GetRequest(url);
+    get.addUser(Secure.user, Secure.password); 
+    get.send(); 
+    JSONObject response = parseJSONObject(get.getContent());
+
+    return response;
+   }
+  
+   JSONArray device_types_list() {
+    /*
+     *
+     */
+    
+    String url = this.api_url + "device-types";
+
+    println(url);
+
+    GetRequest get = new GetRequest(url);
+    get.addUser(Secure.user, Secure.password); 
+    get.send(); 
+    JSONObject response = parseJSONObject(get.getContent());
+    JSONArray ret = response.getJSONArray("data");
+
+    return ret;
+   }
 
   JSONArray device_messages(String device, Integer ... p) {
     /*
