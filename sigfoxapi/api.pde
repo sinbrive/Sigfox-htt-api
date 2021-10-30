@@ -71,14 +71,14 @@ class Sigfox {
       String new_page = response.getJSONObject("paging").getString("next");  // ok
       println(new_page);
 
-      // concatenate arrayjson
+      // concatenate Json Arrays
       for (int i = 0; i < ret.size(); i++) {
         JSONObject r = new JSONObject();
         r = ret.getJSONObject(i);
         out.append(r);
       }
 
-      //between two calls, it seems we should wait a bit
+      //between two calls, it seems we should wait a bit (api doc says 1r/1s!)
       delay(6000);
       if (new_page!=null) this.device_messages_page(new_page, out);
       else return out;
