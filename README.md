@@ -56,11 +56,8 @@ Data returned by the backend :
 
 To do : 
 <pre>
-  device_types_list()
 
   device_rename( device_id, new_name)
-
-  device_info( device_id)
 
   groups_list()
 
