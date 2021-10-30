@@ -16,7 +16,7 @@ public void setup() {
 
   //jsonarray = t.device_messages(Secure.device_id, "15-10-2021");  // before
 
-  //jsonarray = t.device_messages(Secure.device_id);  // all messages
+  jsonarray = t.device_messages(Secure.device_id);  // all messages
 
   t.pprint(jsonarray);
 

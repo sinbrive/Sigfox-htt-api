@@ -99,7 +99,7 @@ class Sigfox {
     GetRequest get = new GetRequest(url);
     get.addUser(Secure.user, Secure.password); 
     get.send(); 
-    try {
+   
       JSONObject response = parseJSONObject(get.getContent());
       JSONArray ret = response.getJSONArray("data");
       //println("ret:"+ret);
@@ -114,12 +114,13 @@ class Sigfox {
       }
 
       //between two calls, it seems we should wait a bit (api doc says 1r/1s!)
-      delay(6000);
-      if (new_page!=null) this.device_messages_page(new_page, out);
-      else return out;
+      delay(5000);
+    try {
+      this.device_messages_page(new_page, out);
+      //if (new_page!=null) this.device_messages_page(new_page, out);
+      //else return out;
     }
     catch(Exception e) {
-      println(e);
     }
     //println(out);
     return out;
@@ -128,7 +129,10 @@ class Sigfox {
   // all messages
   JSONArray device_messages(String device) {
     // Return array of message from paging URL.
-    return device_messages(device, 0);
+    String url = api_url+"devices/" + device + "/messages";
+    JSONArray out = new JSONArray();
+    device_messages_page(url, out);
+    return out;
   }
 
   void pprint(JSONArray jsonarray) {
